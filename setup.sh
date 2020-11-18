@@ -20,9 +20,9 @@ lastNumbers=`echo -n $ip | tail -c 2`
 
 CUR_HOSTNAME=$(cat /etc/hostname)
 
-if [[ $ip == *"100" *]]; then
+if [[ $ip == *"100"* ]]; then
 	NEW_HOSTNAME="Abeille$lastNumbers"
-elif [[ $ip == *"101" *]]; then
+elif [[ $ip == *"101"* ]]; then
 	NEW_HOSTNAME="Baobab$lastNumbers"
 else
 	echo "Adresse IP inconnue"

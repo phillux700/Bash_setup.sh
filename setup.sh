@@ -7,8 +7,11 @@ if [ $EUID -ne 0 ]; then
     exit 1
 fi
 
+# Récupération du nom de l'interface réseau
+eth=`ip link | awk -F: '$0 !~ "lo|vir|wl|^[^0-9]"{print $2;getline}'`
+echo $eth
 # Récupération adresse IP du poste
-ip=`ifconfig ens33 | awk '/inet / {print $2}' | cut -d  ':' -f2`
+ip=`ifconfig $eth | awk '/inet / {print $2}' | cut -d  ':' -f2`
 #echo $ip
 # Récupération des 2 derniers chiffres de l'IP
 lastNumbers=`echo -n $ip | tail -c 2`

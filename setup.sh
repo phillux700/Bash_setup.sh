@@ -43,11 +43,6 @@ function setHostname
 # Fonction pour ajouter un utilisateur
 function setUser
 {
-	Si utilisateur déjà présent
-		on supprime le user et ses données
-		deluser --remove-home user
-
-	Puis on ajoute un pseudo et un mot de passe
 	exists=$(grep -c "^$1:" /etc/passwd)
 	if [ $exists -eq 0 ]; then
 		username="Linuxien${ip}"

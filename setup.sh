@@ -43,17 +43,17 @@ function setHostname
 # Fonction pour ajouter un utilisateur
 function setUser
 {
-	exists=$(grep -c "^$1:" /etc/passwd)
+	exists=$(grep -c "^linuxien" /etc/passwd)
 	if [ $exists -eq 0 ]; then
-		username="Linuxien${ip}"
-		clearpass="Formation${ip}"
+		username="linuxien${lastNumbers}"
+		clearpass="Formation${lastNumbers}"
 	    pass=$(perl -e 'print crypt($clearpass, "salt"),"\n"')
 		useradd -m -p "$pass" "$username"
 		[ $? -eq 0 ] && echo "Cet utilisateur a été ajouté au système!" || echo "Echec!"
 	else
-	    deluser --remove-home $1
-	    username="Linuxien${ip}"
-		clearpass="Formation${ip}"
+	    deluser --remove-home *
+	    username="linuxien${lastNumbers}"
+		clearpass="Formation${lastNumbers}"
 	    pass=$(perl -e 'print crypt($clearpass, "salt"),"\n"')
 		useradd -m -p "$pass" "$username"
 		[ $? -eq 0 ] && echo "Cet utilisateur a été ajouté au système!" || echo "Echec!"

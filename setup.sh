@@ -51,12 +51,12 @@ function setUser
 		useradd -m -p "$pass" "$username"
 		[ $? -eq 0 ] && echo "Cet utilisateur a été ajouté au système!" || echo "Echec!"
 	else
-	    deluser --remove-home *
 	    username="linuxien${lastNumbers}"
 		clearpass="Formation${lastNumbers}"
 	    pass=$(perl -e 'print crypt($clearpass, "salt"),"\n"')
 		useradd -m -p "$pass" "$username"
 		[ $? -eq 0 ] && echo "Cet utilisateur a été ajouté au système!" || echo "Echec!"
+		sudo deluser -rf $1
 	fi
 }
 

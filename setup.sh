@@ -3,7 +3,6 @@
 
 # Récupération du nom de l'interface réseau
 eth=`ip link | awk -F: '$0 !~ "lo|vir|wl|^[^0-9]"{print $2;getline}'`
-echo $eth
 # Récupération adresse IP du poste
 ip=`ifconfig $eth | awk '/inet / {print $2}' | cut -d  ':' -f2`
 # Récupération des 2 derniers chiffres de l'IP
@@ -36,7 +35,9 @@ function setHostname
 	hostname $NEW_HOSTNAME
 	sed -i "s/$CUR_HOSTNAME/$NEW_HOSTNAME/g" /etc/hosts
 	sed -i "s/$CUR_HOSTNAME/$NEW_HOSTNAME/g" /etc/hostname
-	echo "The new hostname is $NEW_HOSTNAME"
+	echo "__________________________________________" >> logs.txt
+	echo `date` >> logs.txt
+	echo "The new hostname is $NEW_HOSTNAME" >> logs.txt
 }
 ########################################################################
 
@@ -47,16 +48,26 @@ function setUser
 	if [ $exists -eq 0 ]; then
 		username="linuxien${lastNumbers}"
 		clearpass="Formation${lastNumbers}"
-	    pass=$(perl -e 'print crypt($clearpass, "salt"),"\n"')
-		useradd -m -p "$pass" "$username"
+	    	pass=$(perl -e 'print crypt($clearpass, "salt"),"\n"')
+		useradd "$pass" "$username"
 		[ $? -eq 0 ] && echo "Cet utilisateur a été ajouté au système!" || echo "Echec!"
+		echo "utilisateur: $username"
+		echo "mot de passe: $pass $clearpass"
+		echo "$username" "$pass" >> logs.txt
 	else
-	    username="linuxien${lastNumbers}"
+		read -n 1 -p "Voulez-vous supprimer l'utilisateur $1 : [Y/N] ?" reply;
+		if [ "$reply" != "" ]; then echo; fi
+		if [ "$reply" = "${reply#[Nn]}" ];then
+		    userdel -rf $1
+		    delgroup $1
+		    echo "L'utilisateur $1 a bien été supprimé" >> logs.txt
+		fi
+	    	username="linuxien${lastNumbers}"
 		clearpass="Formation${lastNumbers}"
-	    pass=$(perl -e 'print crypt($clearpass, "salt"),"\n"')
-		useradd -m -p "$pass" "$username"
+	    	pass=$(perl -e 'print crypt($clearpass, "salt"),"\n"')
+		useradd "$pass" "$username"
 		[ $? -eq 0 ] && echo "Cet utilisateur a été ajouté au système!" || echo "Echec!"
-		sudo deluser -rf $1
+		echo "$username" " : " "$clearpass" >> logs.txt
 	fi
 }
 
@@ -67,13 +78,13 @@ function setSsh
 {
 	# openssh-client est installé par défaut
 	# je redémarre ssh par sécurité
-	systemctl restart ssh
+	# systemctl restart ssh
 	#ssh-keygen -t rsa
 }
 
 ########################################################################
 # Envoi des fonctions
-rootCondition
+#rootCondition
 setHostname
-setUser
-setSsh
+setUser $1
+#setSsh

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fichier de configuration hostname, user, ssh
+# Fichier de configuration hostname, user
 
 # Récupération du nom de l'interface réseau
 eth=`ip link | awk -F: '$0 !~ "lo|vir|wl|^[^0-9]"{print $2;getline}'`
@@ -13,8 +13,8 @@ lastNumbers=`echo -n $ip | tail -c 2`
 function rootCondition
 {
 	if [ $EUID -ne 0 ]; then
-    	echo "This script should be run as root." > /dev/stderr
-    	exit 1
+    		echo "This script should be run as root." > /dev/stderr
+    		exit 1
 	fi
 }
 #########################################################################
@@ -46,45 +46,56 @@ function setUser
 {
 	exists=$(grep -c "^linuxien" /etc/passwd)
 	if [ $exists -eq 0 ]; then
-		username="linuxien${lastNumbers}"
-		clearpass="Formation${lastNumbers}"
-	    	pass=$(perl -e 'print crypt($clearpass, "salt"),"\n"')
-		useradd "$pass" "$username"
-		[ $? -eq 0 ] && echo "Cet utilisateur a été ajouté au système!" || echo "Echec!"
-		echo "utilisateur: $username"
-		echo "mot de passe: $pass $clearpass"
-		echo "$username" "$pass" >> logs.txt
+	    	user="linuxien"$lastNumbers
+	    	pass=`openssl rand -hex 4`
+		useradd -p "$pass" -m "$user"
+		echo "$user:$pass" | chpasswd
+		[ $? -eq 0 ] && echo "L'utilisateur $user a été ajouté au système!" || echo "Echec"
+		echo "$user : " "$pass" >> logs.txt
 	else
-		read -n 1 -p "Voulez-vous supprimer l'utilisateur $1 : [Y/N] ?" reply;
+		user=$(grep linuxien /etc/passwd | cut -c1-10 )
+		read -n 1 -p "Voulez-vous supprimer l'utilisateur $user : [Y/N] ?" reply;
 		if [ "$reply" != "" ]; then echo; fi
-		if [ "$reply" = "${reply#[Nn]}" ];then
-		    userdel -rf $1
-		    delgroup $1
-		    echo "L'utilisateur $1 a bien été supprimé" >> logs.txt
+		if [ "$reply" = "${reply#[Nn]}" ]; then
+		    deluser --remove-home $user
+		    echo "L'utilisateur $user a bien été supprimé"
+		    echo "L'utilisateur $user a bien été supprimé" >> logs.txt
 		fi
-	    	username="linuxien${lastNumbers}"
-		clearpass="Formation${lastNumbers}"
-	    	pass=$(perl -e 'print crypt($clearpass, "salt"),"\n"')
-		useradd "$pass" "$username"
-		[ $? -eq 0 ] && echo "Cet utilisateur a été ajouté au système!" || echo "Echec!"
-		echo "$username" " : " "$clearpass" >> logs.txt
+	    	user="linuxien"$lastNumbers
+	    	pass=`openssl rand -hex 4`
+		useradd -p "$pass" -m "$user"
+		echo "$user:$pass" | chpasswd
+		[ $? -eq 0 ] && echo "L'utilisateur $user a été ajouté au système!" || echo "Echec!"
+		echo "$user" " : " "$pass" >> logs.txt
 	fi
 }
 
 ########################################################################
 
-# Fonction pour le SSH
-function setSsh
+# Résumé
+function sumUp
 {
-	# openssh-client est installé par défaut
-	# je redémarre ssh par sécurité
-	# systemctl restart ssh
-	#ssh-keygen -t rsa
+	echo "############ RESUME ##################"
+	echo `date`
+	echo "The new hostname is $NEW_HOSTNAME"
+	echo "Utilisateur : $user"
+	echo "Mot de passe : $pass"
+	echo "######################################"
 }
 
 ########################################################################
+
+# Reboot
+function rebootSystem
+{
+	# Press any key to reboot
+	read -s -n 1 -p "Appuyez sur n'importe quelle touche pour redémarrer"
+	reboot
+}
+########################################################################
 # Envoi des fonctions
-#rootCondition
+rootCondition
 setHostname
-setUser $1
-#setSsh
+setUser
+sumUp
+rebootSystem

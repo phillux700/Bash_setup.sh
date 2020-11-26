@@ -30,8 +30,6 @@ function setHostname
 	else
 		echo "Adresse IP inconnue"
 	fi
-
-	hostname ctl set-hostname $NEW_HOSTNAME
 	hostname $NEW_HOSTNAME
 	sed -i "s/$CUR_HOSTNAME/$NEW_HOSTNAME/g" /etc/hosts
 	sed -i "s/$CUR_HOSTNAME/$NEW_HOSTNAME/g" /etc/hostname
